@@ -1,6 +1,5 @@
 from bin.Nodo import Nodo
 
-
 class ListaSimple():
 
     def __init__(self):
