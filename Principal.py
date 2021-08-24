@@ -4,12 +4,15 @@ from tkinter import filedialog
 from xml.dom import minidom
 # from graphviz import Digraph
 import os.path as path
+import numpy as np
 
+from bin.Posicion import Posicion
 from bin.Terreno import Terreno
+from bin.TerrenoSalida import TerrenoSalida
 from lista.ListaSimple import ListaSimple
 
-
 class Principal():
+
     def menu(self):
         terrenos = ListaSimple()
         terrenosProcesados = ListaSimple()
@@ -42,7 +45,7 @@ class Principal():
             except ValueError:
                 entrada = 0
 
-            if entrada in range(1,7):
+            if entrada in range(1, 7):
                 if entrada == 1:
                     # Cargar archivo
 
@@ -52,12 +55,12 @@ class Principal():
                     print("CARGAR ARCHIVO")
                     print(">")
 
-                    ruta = filedialog.askopenfilename(initialdir = "/",
-                                title = "Seleccione archivo",filetypes = (("xml files","*.xml"),
-                                ("all files","*.*")))
+                    ruta = filedialog.askopenfilename(initialdir="/",
+                                                      title="Seleccione archivo", filetypes=(("xml files", "*.xml"),
+                                                                                             ("all files", "*.*")))
 
                     if path.isfile(ruta):
-                        archivo_xml =  minidom.parse(ruta)
+                        archivo_xml = minidom.parse(ruta)
                         items = archivo_xml.getElementsByTagName("terreno")
 
                         for temp in items:
@@ -128,15 +131,194 @@ class Principal():
                         _tempOpcion = input()
 
                         try:
-                            _tempOpcion = int(entrada)
+                            _tempOpcion = int(_tempOpcion)
                         except ValueError:
                             _tempOpcion = 0
 
-                        if _tempOpcion == 0:
+                        if (_tempOpcion == 0) or (_tempOpcion > _tempContador):
                             print("")
                             print(">> Opcion invalida")
                         else:
-                            print("")
+                            _aux = terrenos.getLista()
+                            _tempAux = 1
+                            while _aux:
+                                if _tempAux == _tempOpcion:
+                                    system("cls")
+
+                                    print("")
+                                    print("TERRENO: " + str(_aux.getDato().getNombre()))
+                                    print("")
+
+                                    print(">>Calcular la mejor ruta")
+
+                                    _rutas = []
+                                    _posiciones = _aux.getDato().getPosiciones()
+                                    _posX = 0
+                                    _posY = 0
+                                    while _posiciones:
+                                        _rutas.append(_posiciones.getDato())
+                                        if _posX < _posiciones.getDato().getX():
+                                            _posX = int(_posiciones.getDato().getX())
+
+                                        if _posY < _posiciones.getDato().getY():
+                                            _posY = int(_posiciones.getDato().getY())
+                                        _posiciones = _posiciones.getSiguiente()
+
+                                    _tempMatriz = np.zeros((int(_posY), int(_posX)), dtype=np.int16)
+
+                                    for _tempRuta in _rutas:
+                                        _tempMatriz[_tempRuta.getY() - 1][_tempRuta.getX() - 1] = _tempRuta.getValor()
+
+                                    _terrenoSalida = TerrenoSalida(_aux.getDato().getNombre())
+
+                                    _tempSalida = []
+                                    _inicioX = _aux.getDato().getInicio().getX() - 1
+                                    _inicioY = _aux.getDato().getInicio().getY() - 1
+                                    _finX = _aux.getDato().getFin().getX() - 1
+                                    _finY = _aux.getDato().getFin().getY() - 1
+
+                                    _X = _inicioX
+                                    _Y = _inicioY
+
+                                    _posX = _posX - 1
+                                    _posY = _posY - 1
+
+                                    print(_tempMatriz)
+                                    print(_X)
+                                    print(_Y)
+                                    while True:
+                                        if _X == 0 and _Y == 0:
+                                            
+
+                                            if _tempMatriz[0][1] < _tempMatriz[1][0]:
+                                                if _inicioX < _finX:
+                                                    _X = 1
+                                                else:
+                                                    _Y = 1
+                                            else:
+                                                if _inicioY < _finY:
+                                                    _Y = 1
+                                                else:
+                                                    _X = 1
+                                        elif _X == _posX and _Y == 0:
+                                            if _tempMatriz[0][_X - 1] < _tempMatriz[1][_X]:
+                                                if _inicioX > _finX:
+                                                    _X -= 1
+                                                else:
+                                                    _Y += 1
+                                            else:
+                                                if _inicioY < _finY:
+                                                    _Y += 1
+                                                else:
+                                                    _X -= 1
+                                        elif _X == _posX and _Y == _posY:
+                                            if _tempMatriz[_Y][_X-1] < _tempMatriz[_Y-1][_X]:
+                                                if _inicioX > _finX:
+                                                    _X -= 1
+                                                else:
+                                                    _Y -= 1
+                                            else:
+                                                if _inicioY > _finY:
+                                                    _Y -= 1
+                                                else:
+                                                    _X -= 1
+                                        elif _X == 0 and _Y == _posY:
+                                            if _tempMatriz[_Y][1] < _tempMatriz[_Y-1][0]:
+                                                if _inicioX < _finX:
+                                                    _X = 1
+                                                else:
+                                                    _Y -= 1
+                                            else:
+                                                if _inicioY > _finY:
+                                                    _Y -= 1
+                                                else:
+                                                    _X = 1
+                                        elif 0 < _X < _posX and _Y == 0:
+                                            if _inicioX < _finX:
+                                                if _tempMatriz[0][_X+1] < _tempMatriz[1][_X]:
+                                                    _X += 1
+                                                else:
+                                                    _Y = 1
+                                            else:
+                                                if _tempMatriz[0][_X-1] < _tempMatriz[1][_X]:
+                                                    _X -= 1
+                                                else:
+                                                    _Y = 1
+                                        elif 0 < _X < _posX and _Y == _posY:
+                                            if _inicioX < _finX:
+                                                if _tempMatriz[_Y][_X+1] < _tempMatriz[_Y-1][_X]:
+                                                    _X += 1
+                                                else:
+                                                    _Y -= 1
+                                            else:
+                                                if _tempMatriz[_Y][_X-1] < _tempMatriz[_Y-1][_X]:
+                                                    _X -= 1
+                                                else:
+                                                    _Y -= 1
+                                        elif 0 < _Y < _posY and _X == 0:
+                                            if _inicioY < _finY:
+                                                if _tempMatriz[_Y+1][0] < _tempMatriz[_Y][1]:
+                                                    _Y += 1
+                                                else:
+                                                    _X = 1
+                                            else:
+                                                if _tempMatriz[_Y-1][0] < _tempMatriz[_Y][1]:
+                                                    _Y -= 1
+                                                else:
+                                                    _X = 1
+                                        elif 0 < _Y < _posY and _X == _posX:
+                                            print("A")
+                                            if _inicioY < _finY:
+                                                if _tempMatriz[_Y+1][_X] < _tempMatriz[_Y][_X-1]:
+                                                    _Y += 1
+                                                else:
+                                                    _X -= 1
+                                            else:
+                                                if _tempMatriz[_Y-1][_X] < _tempMatriz[_Y][_X-1]:
+                                                    _Y -= 1
+                                                else:
+                                                    _X -= 1
+                                        elif 0 < _X < _posX and 0 < _Y < _posY:
+                                            if _inicioX < _finX:
+                                                if _inicioY < _finY:
+                                                    if _tempMatriz[_Y + 1][_X] < _tempMatriz[_Y][_X + 1]:
+                                                        _Y += 1
+                                                    else:
+                                                        _X += 1
+                                                else:
+                                                    if _tempMatriz[_Y - 1][_X] < _tempMatriz[_Y][_X + 1]:
+                                                        _Y -= 1
+                                                    else:
+                                                        _X += 1
+                                            else:
+                                                if _inicioY < _finY:
+                                                    if _tempMatriz[_Y + 1][_X] < _tempMatriz[_Y][_X - 1]:
+                                                        _Y += 1
+                                                    else:
+                                                        _X -= 1
+                                                else:
+                                                    if _tempMatriz[_Y - 1][_X] < _tempMatriz[_Y][_X - 1]:
+                                                        _Y -= 1
+                                                    else:
+                                                        _X -= 1
+
+                                        print("X=" + str(_X) + " Y=" + str(_Y))
+                                        if _X == _finX and _Y == _finY:
+                                            break
+
+                                    print("---------------")
+                                    print(_X)
+                                    print(_Y)
+
+                                    print(">> Calcular cantidad de combustible")
+
+                                    # combustible
+
+                                    terrenosProcesados.agregar(_terrenoSalida)
+                                    break
+                                else:
+                                    _aux = _aux.getSiguiente()
+                                    _tempAux += 1
 
                     print("")
                     print(">> Continuar")
@@ -148,6 +330,7 @@ class Principal():
                     pass
                 elif entrada == 4:
                     # Mostrar datos del estudiante
+
                     system("cls")
 
                     print("DATOS ESTUDIANTE")
@@ -167,6 +350,8 @@ class Principal():
                     # Generar grafica
                     pass
                 elif entrada == 6:
+                    # Salir
+
                     system("cls")
 
                     sys.exit(0)
@@ -178,3 +363,4 @@ class Principal():
                 print("> ", end="")
 
                 _temp = input()
+
