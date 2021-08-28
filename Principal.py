@@ -340,6 +340,9 @@ class Principal():
 
                                     _terrenoSalida.setCombustible(_combustible)
 
+                                    print("")
+                                    print(">> Combustible: " + str(_combustible) + " u")
+
                                     terrenosProcesados.agregar(_terrenoSalida)
                                     break
                                 else:
@@ -493,6 +496,7 @@ class Principal():
                                         grafico.attr(rank="same")
                                         for i in range(len(_tempMatriz)):
                                             for j in range(len(_tempMatriz[i])):
+                                                print(str(j) + "," + str(i) + "!")
                                                 grafico.node(str("X" + str(j) + "Y" + str(i)),
                                                              label=str(_tempMatriz[i][j]))
 
@@ -519,7 +523,7 @@ class Principal():
                                         print("")
                                         print(">> No se selecciono el directorio")
 
-                                    system("cls")
+                                    #system("cls")
                                     print(">> Gráfico generado")
                                     break
                                 else:
